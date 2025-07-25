@@ -106,6 +106,8 @@ ConVar tf_obj_ground_clearance( "tf_obj_ground_clearance", "32", FCVAR_CHEAT | F
 
 ConVar tf_obj_damage_tank_achievement_amount( "tf_obj_damage_tank_achievement_amount", "2000", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
+ConVar tf_engy_quick_build("tf_engy_quick_build", "0", FCVAR_CHEAT | FCVAR_REPLICATED , "If set to 1, Engineer buildings will be built instantly.");
+
 extern short g_sModelIndexFireball;
 extern ConVar tf_cheapobjects;
 
@@ -1312,6 +1314,9 @@ bool CBaseObject::StartBuilding( CBaseEntity *pBuilder )
 	// Need to add the object to the team now...
 	CTFTeam *pTFTeam = ( CTFTeam * )GetGlobalTeam( GetTeamNumber() );
 
+	// Get TFPlayer from builder
+	CTFPlayer* pTFBuilder = ToTFPlayer(pBuilder);
+
 	// Deduct the cost from the player
 	if ( pBuilder && pBuilder->IsPlayer() )
 	{
@@ -1435,7 +1440,6 @@ bool CBaseObject::StartBuilding( CBaseEntity *pBuilder )
 
 	if ( pBuilder && pBuilder->IsPlayer() )
 	{
-		CTFPlayer *pTFBuilder = ToTFPlayer( pBuilder );
 		pTFBuilder->FinishedObject( this );
 		IGameEvent * event = gameeventmanager->CreateEvent( "player_builtobject" );
 		if ( event )
@@ -1475,6 +1479,17 @@ bool CBaseObject::StartBuilding( CBaseEntity *pBuilder )
 	if ( ShouldQuickBuild() )
 	{
 		DoQuickBuild();
+	}
+
+	if ( tf_engy_quick_build.GetInt() == 1 )
+		m_flTotalConstructionTime = 0.f;
+
+	// Does wrench have quickbuild attribute? If so then build instantly
+	int iWrenchDoesQuickBuild = 0;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pTFBuilder, iWrenchDoesQuickBuild, wrench_does_quick_build);
+	if (iWrenchDoesQuickBuild == 1)
+	{
+		m_flTotalConstructionTime = 0.f;
 	}
 
 	return true;
@@ -3688,7 +3703,6 @@ bool CBaseObject::ShouldQuickBuild( void )
 		if ( GetType() == OBJ_ATTACHMENT_SAPPER )
 			return false;
 
-
 		if ( TFGameRules()->IsQuickBuildTime() )
 			return true;
 
@@ -3769,6 +3783,7 @@ int	CBaseObject::GetUpgradeAmountPerHit( void )
 
 	if ( TFGameRules()->InSetup() || TFGameRules()->IsPowerupMode() )
 	{
+		Msg("[Snowy] Upgrade Power (GetUpgradeAmountPerHit)");
 		nAmount *= 2;
 	}
 
@@ -3803,7 +3818,7 @@ void CBaseObject::InputDisable( inputdata_t &inputdata )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose:
+// Purpose: Check what the max health of this object is for the current object's level.
 //-----------------------------------------------------------------------------
 int CBaseObject::GetMaxHealthForCurrentLevel( void )
 {

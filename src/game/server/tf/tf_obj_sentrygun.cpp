@@ -51,15 +51,15 @@ extern ConVar tf_nav_in_combat_range;
 #define SENTRYGUN_ADD_SHELLS	40
 #define SENTRYGUN_ADD_ROCKETS	8
 
-#define SENTRY_THINK_DELAY	0.05
+#define SENTRY_THINK_DELAY	0.1
 
 #define	SENTRYGUN_CONTEXT	"SentrygunContext"
 
 #define SENTRYGUN_RECENTLY_ATTACKED_TIME 2.0
 
 #define SENTRYGUN_MINIGUN_RESIST_LVL_1		0.0
-#define SENTRYGUN_MINIGUN_RESIST_LVL_2		0.15
-#define SENTRYGUN_MINIGUN_RESIST_LVL_3		0.20
+#define SENTRYGUN_MINIGUN_RESIST_LVL_2		0.2
+#define SENTRYGUN_MINIGUN_RESIST_LVL_3		0.25
 
 #define SENTRYGUN_SAPPER_OWNER_DAMAGE_MODIFIER	0.66f
 
@@ -67,8 +67,6 @@ extern ConVar tf_nav_in_combat_range;
 #define MINI_SENTRY_SCALE			0.75f
 #define DISPOSABLE_SCALE			0.65f
 #define SMALL_SENTRY_SCALE			0.80f
-
-#define WRANGLER_DISABLE_TIME		3.0f
 
 enum
 {	
@@ -131,16 +129,17 @@ END_DATADESC()
 LINK_ENTITY_TO_CLASS(obj_sentrygun, CObjectSentrygun);
 PRECACHE_REGISTER(obj_sentrygun);
 
-ConVar tf_sentrygun_damage( "tf_sentrygun_damage", "16", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-ConVar tf_sentrygun_mini_damage( "tf_sentrygun_mini_damage", "8", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-ConVar tf_sentrygun_ammocheat( "tf_sentrygun_ammocheat", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+ConVar tf_sentrygun_damage( "tf_sentrygun_damage", "12", FCVAR_CHEAT | FCVAR_REPLICATED );
+ConVar tf_sentrygun_mini_damage( "tf_sentrygun_mini_damage", "8", FCVAR_CHEAT | FCVAR_REPLICATED );
+ConVar tf_sentrygun_ammocheat( "tf_sentrygun_ammocheat", "0", FCVAR_CHEAT | FCVAR_REPLICATED );
 extern ConVar tf_obj_upgrade_per_hit;
-ConVar tf_sentrygun_newtarget_dist( "tf_sentrygun_newtarget_dist", "200", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-ConVar tf_sentrygun_metal_per_shell( "tf_sentrygun_metal_per_shell", "1", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-ConVar tf_sentrygun_metal_per_rocket( "tf_sentrygun_metal_per_rocket", "2", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
-ConVar tf_sentrygun_notarget( "tf_sentrygun_notarget", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+ConVar tf_sentrygun_newtarget_dist( "tf_sentrygun_newtarget_dist", "200", FCVAR_CHEAT | FCVAR_REPLICATED );
+ConVar tf_sentrygun_metal_per_shell( "tf_sentrygun_metal_per_shell", "1", FCVAR_CHEAT | FCVAR_REPLICATED );
+ConVar tf_sentrygun_metal_per_rocket( "tf_sentrygun_metal_per_rocket", "2", FCVAR_CHEAT | FCVAR_REPLICATED );
+ConVar tf_sentrygun_notarget( "tf_sentrygun_notarget", "0", FCVAR_CHEAT | FCVAR_REPLICATED );
 ConVar tf_sentrygun_max_absorbed_damage_while_controlled_for_achievement( "tf_sentrygun_max_absorbed_damage_while_controlled_for_achievement", "500", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 ConVar tf_sentrygun_kill_after_redeploy_time_achievement( "tf_sentrygun_kill_after_redeploy_time_achievement", "10", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+ConVar tf_sentrygun_wrangler_disable_timer("tf_sentrygun_wrangler_disable_timer", "3.0", FCVAR_CHEAT | FCVAR_REPLICATED, "How long the sentrygun will be disabled after holstering wrangler.");
 extern ConVar tf_cheapobjects;
 
 //-----------------------------------------------------------------------------
@@ -607,6 +606,7 @@ void CObjectSentrygun::FinishUpgrading( void )
 //-----------------------------------------------------------------------------
 bool CObjectSentrygun::OnWrenchHit( CTFPlayer *pPlayer, CTFWrench *pWrench, Vector hitLoc )
 {
+	// you can't repair/refill ammo on a disposable building
 	if ( IsDisposableBuilding() )
 		return false;
 
@@ -643,7 +643,7 @@ bool CObjectSentrygun::OnWrenchHit( CTFPlayer *pPlayer, CTFWrench *pWrench, Vect
 	if ( !IsUpgrading() )
 	{
 		// player ammo into rockets
-		//	1 ammo = 1 shell
+		//	1 ammo = 2 shell
 		//  2 ammo = 1 rocket
 		//  only fill rockets if we have extra shells
 
@@ -653,6 +653,7 @@ bool CObjectSentrygun::OnWrenchHit( CTFPlayer *pPlayer, CTFWrench *pWrench, Vect
 		if ( m_iAmmoShells < m_iMaxAmmoShells && iPlayerMetal > 0 )
 		{
 			int iMaxShellsPlayerCanAfford = (int)( (float)iPlayerMetal / tf_sentrygun_metal_per_shell.GetFloat() );
+			iMaxShellsPlayerCanAfford *= 2; // 1 metal = 2 shells
 
 			// cap the amount we can add
 			int iAmountToAdd = MIN( SENTRYGUN_ADD_SHELLS, iMaxShellsPlayerCanAfford );
@@ -787,7 +788,7 @@ bool CObjectSentrygun::FindTarget()
 {
 	if ( m_bPlayerControlled )
 	{
-		m_flShieldFadeTime = gpGlobals->curtime + WRANGLER_DISABLE_TIME;
+		m_flShieldFadeTime = gpGlobals->curtime + tf_sentrygun_wrangler_disable_timer.GetFloat();
 	}
 	m_bPlayerControlled = false;
 
@@ -870,7 +871,7 @@ bool CObjectSentrygun::FindTarget()
 		{
 			m_bPlayerControlled = true;
 			m_nShieldLevel.Set( SHIELD_NORMAL );
-			m_flShieldFadeTime = gpGlobals->curtime + WRANGLER_DISABLE_TIME;
+			m_flShieldFadeTime = gpGlobals->curtime + tf_sentrygun_wrangler_disable_timer.GetFloat();
 
 			// If not target dummy, use laserdot, otherwise targetdummy overrides
 			if ( !bDummyTarget || !pTargetCurrent )
@@ -1274,8 +1275,9 @@ void CObjectSentrygun::Attack()
 		{
 			m_flFireRate *= 0.5f;
 		}
-			
-		if ( IsMiniBuilding() && !IsDisposableBuilding() )
+		
+		// Originally && !IsDisposableBuilding() but I think disposables should fire same as minis
+		if ( IsMiniBuilding() || IsDisposableBuilding() )
 		{
 			m_flFireRate *= 0.75f;
 		}
@@ -1288,10 +1290,16 @@ void CObjectSentrygun::Attack()
 		if ( m_iUpgradeLevel == 1 )
 		{
 			// Level 1 sentries fire slower
+			m_flNextAttack = gpGlobals->curtime + (0.3*m_flFireRate);
+		}
+		if ( m_iUpgradeLevel == 2 )
+		{
+			// Level 2 sentries fire at a normal rate
 			m_flNextAttack = gpGlobals->curtime + (0.2*m_flFireRate);
 		}
-		else
+		if ( m_iUpgradeLevel == 3 )
 		{
+			// Level 3 sentries fire faster than lvl 2
 			m_flNextAttack = gpGlobals->curtime + (0.1*m_flFireRate);
 		}
 	}
@@ -1359,7 +1367,7 @@ bool CObjectSentrygun::FireRocket()
 		CTFProjectile_SentryRocket *pProjectile = CTFProjectile_SentryRocket::Create( vecSrc, angAimDir, this, GetBuilder() );
 		if ( pProjectile )
 		{
-			int iDamage = 100;
+			int iDamage = 125;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( GetOwner(), iDamage, mult_engy_sentry_damage );
 			pProjectile->SetDamage( iDamage );
 		}
@@ -1367,12 +1375,12 @@ bool CObjectSentrygun::FireRocket()
 		// Setup next rocket shot
 		if ( m_bPlayerControlled )
 		{
-			m_flNextRocketAttack = gpGlobals->curtime + 2.25;
+			m_flNextRocketAttack = gpGlobals->curtime + 1.25;
 		}
 		else
 		{
 			AddGesture( ACT_RANGE_ATTACK2 );
-			m_flNextRocketAttack = gpGlobals->curtime + 3;
+			m_flNextRocketAttack = gpGlobals->curtime + 2;
 		}
 
 		if ( !tf_sentrygun_ammocheat.GetBool() && !HasSpawnFlags( SF_SENTRY_INFINITE_AMMO ) )
@@ -1446,7 +1454,7 @@ bool CObjectSentrygun::Fire()
 
 	Vector vecAimDir;
 
-	// Level 3 Turrets fire rockets every 3 seconds
+	// Level 3 Turrets fire rockets every 2 seconds
 	if ( m_iUpgradeLevel == 3 &&
 		 m_iAmmoRockets > 0 &&
 		 m_flNextRocketAttack < gpGlobals->curtime &&

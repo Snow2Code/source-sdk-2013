@@ -196,6 +196,7 @@ public:
 	// Returns the item data for the base item in the loadout slot for a given class
 	CEconItemView		*GetBaseItemForClass( int iClass, int iSlot );
 	void				GenerateBaseItems( void );
+	CEconItemView		*AddSnowyItem(int id);
 
 	// Gets the specified inventory for the steam ID
 	CTFPlayerInventory	*GetInventoryForPlayer( const CSteamID &playerID );
@@ -215,11 +216,14 @@ public:
 
 	int					GetBaseItemCount( )			{ return m_pBaseLoadoutItems.Count(); }
 	CEconItemView*		GetBaseItem( int iIndex )	{ return m_pBaseLoadoutItems[iIndex]; }
+	int                 GetSnowyItemCount()			{ return m_pSnowyLoadoutItems.Count(); }
+	CEconItemView*		GetSnowyItem(int iIndex)		{ return m_pSnowyLoadoutItems[iIndex]; }
 
 private:
 	// Base items, returned for slots that the player doesn't have anything in
 	CEconItemView				*m_pDefaultItem;
 	CUtlVector<CEconItemView*>	m_pBaseLoadoutItems;
+	CUtlVector<CEconItemView*>	m_pSnowyLoadoutItems;
 
 #ifdef CLIENT_DLL
 	// On the client, we have a single inventory for the local player. Stored here, instead of in the

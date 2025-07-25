@@ -76,13 +76,15 @@ ConVar tf_movement_lost_footing_restick( "tf_movement_lost_footing_restick", "50
                                          "Early escape the lost footing condition if the player is moving slower than this across the ground" );
 ConVar tf_movement_lost_footing_friction( "tf_movement_lost_footing_friction", "0.1", FCVAR_REPLICATED | FCVAR_CHEAT,
                                           "Ground friction for players who have lost their footing" );
+ConVar sv_autobunnyhopping("sv_autobunnyhopping", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "Enable holding jump to keep jumping instead of pressing every time.");
+ConVar sv_enablebunnyhopping("sv_enablebunnyhopping", "1", FCVAR_REPLICATED | FCVAR_CHEAT, "Enable bunnyhopping (Allow player to jump faster than max forward speed.)");
 
 extern ConVar cl_forwardspeed;
 extern ConVar cl_backspeed;
 extern ConVar cl_sidespeed;
 extern ConVar mp_tournament_readymode_countdown;
 
-#define TF_MAX_SPEED   (400 * 1.3)	// 400 is Scout max speed, and we allow up to 3% movement bonus.
+#define TF_MAX_SPEED   (400 * 2)	// 400 is Scout max speed, and we allow up to +100% movement bonus.
 
 #define TF_WATERJUMP_FORWARD	30
 #define TF_WATERJUMP_UP			300
@@ -1217,22 +1219,25 @@ bool CTFGameMovement::CheckJumpButton()
 
 	ToggleParachute();
 
-	// Cannot jump will ducked.
+	// Cannot jump while ducked.
 	if ( player->GetFlags() & FL_DUCKING )
 	{
 		// Let a scout do it.
 		bool bAllow = ( bScout && !bOnGround );
 
+		// Let autobunnyhopping=1 do it.
+		bAllow = (sv_autobunnyhopping.GetInt() == 1);
+
 		if ( !bAllow )
 			return false;
 	}
 
-	// Cannot jump while in the unduck transition.
-	if ( ( player->m_Local.m_bDucking && (  player->GetFlags() & FL_DUCKING ) ) || ( player->m_Local.m_flDuckJumpTime > 0.0f ) )
+	// Cannot jump while in the unduck transition. Unless autobunnyhopping is enabled.
+	if ((player->m_Local.m_bDucking && (player->GetFlags() & FL_DUCKING)) && sv_autobunnyhopping.GetInt() == 0 || (player->m_Local.m_flDuckJumpTime > 0.0f) && sv_autobunnyhopping.GetInt() == 0)
 		return false;
 
-	// Cannot jump again until the jump button has been released.
-	if ( mv->m_nOldButtons & IN_JUMP )
+	// Cannot jump again until the jump button has been released. Unless autobunnyhopping is enabled.
+	if ( mv->m_nOldButtons & IN_JUMP && sv_autobunnyhopping.GetInt() == 0)
 		return false;
 
 	// In air, so ignore jumps 
@@ -1241,7 +1246,12 @@ bool CTFGameMovement::CheckJumpButton()
 	{
 		if ( m_pTFPlayer->CanAirDash() )
 		{
-			bAirDash = true;
+			// hack fix to stop scouts from air dashing when autobunnyhopping is enabled,
+			// because otherwise they waste their air dash and mess up their movement
+			if (sv_autobunnyhopping.GetInt() == 1)
+				return false;
+			else
+				bAirDash = true;
 		}
 		else
 		{
@@ -1259,7 +1269,8 @@ bool CTFGameMovement::CheckJumpButton()
 		return true;
 	}
 
-	PreventBunnyJumping();
+	if (sv_enablebunnyhopping.GetInt() == 0)
+		PreventBunnyJumping();
 
 	// Start jump animation and player sound (specific TF animation and flags).
 	m_pTFPlayer->DoAnimationEvent( PLAYERANIMEVENT_JUMP );

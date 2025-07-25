@@ -58,13 +58,13 @@ DECLARE_AUTO_LIST( IBaseObjectAutoList );
 
 enum
 {
-	SHIELD_NONE = 0,
-	SHIELD_NORMAL,	// 33% damage taken, no tracking
-	SHIELD_MAX,		// 10% damage taken, tracking
+	SHIELD_NONE = 0,// 100% damage taken, autoaim tracking (this is unwrangled)
+	SHIELD_NORMAL,	// 66% damage taken, no tracking
+	SHIELD_MAX,		// 33% damage taken, tracking
 };
 
-#define SHIELD_NORMAL_VALUE		0.33f
-#define SHIELD_MAX_VALUE		0.10f
+#define SHIELD_NORMAL_VALUE		0.66f
+#define SHIELD_MAX_VALUE		0.33f
 
 // ------------------------------------------------------------------------ //
 // Resupply object that's built by the player

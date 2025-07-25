@@ -1280,6 +1280,7 @@ public:
 	bool		IsImported( void ) const			{ return m_bImported; }
 	bool		IsAllowedInMatch( void ) const		{ return m_bAllowedInThisMatch; }
 	bool		IsBaseItem( void ) const			{ return m_bBaseItem; }
+	bool		IsSnowyItem(void) const				{ return m_bSnowyItem; }
 	bool		IsBundle( void ) const				{ return m_BundleInfo != NULL; }
 	bool		HasProperName( void ) const			{ return m_bProperName; }
 	const char	*GetClassToken( void ) const		{ return m_pszClassToken; }
@@ -1600,6 +1601,7 @@ private:
 	bool			m_bHidden;
 	bool			m_bShouldShowInArmory;
 	bool			m_bBaseItem;
+	bool			m_bSnowyItem;
 	bool			m_bImported;
 
 	// A pack bundle is a bundle that contains items that are not for sale individually
@@ -2610,6 +2612,9 @@ public:
 	typedef CUtlMap<int, CEconItemDefinition*, int>	BaseItemDefinitionMap_t;
 	const BaseItemDefinitionMap_t &GetBaseItemDefinitionMap() const { return m_mapBaseItems; }
 
+	typedef CUtlMap<int, CEconItemDefinition*, int>	SnowyItemDefinitionMap_t;
+	const SnowyItemDefinitionMap_t& GetSnowyItemDefinitionMap() const { return m_mapSnowyItems; }
+
 	typedef CUtlDict<CEconLootListDefinition *>	LootListDefinitionMap_t;
 	const LootListDefinitionMap_t &GetLootLists() const { return m_dictLootLists; }
 
@@ -2924,6 +2929,9 @@ private:
 
 	// List of all base items, is a sublist of mapItems
 	BaseItemDefinitionMap_t								m_mapBaseItems;
+
+	// List of all snowy items, is a sublist of mapItems
+	SnowyItemDefinitionMap_t								m_mapSnowyItems;
 
 #if defined(CLIENT_DLL) || defined(GAME_DLL)
 	// What is the default item definition we'll return in the client code if we can't find the correct one?

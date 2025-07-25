@@ -491,7 +491,8 @@ void CHudBaseDeathNotice::FireGameEvent( IGameEvent *event )
 
 		if ( event->GetInt( "death_flags" ) & TF_DEATH_AUSTRALIUM )
 		{
-			m_DeathNotices[iMsg].bCrit= true;
+			Msg("[Snowy] hud_basedeathnotice - why does australium weapons have the bCrit = true line?");
+			// m_DeathNotices[iMsg].bCrit= true;
 			m_DeathNotices[iMsg].iconCritDeath = GetIcon( "d_australium", bLocalPlayerInvolved ? kDeathNoticeIcon_Inverted : kDeathNoticeIcon_Standard );
 		}
 		else if ( event->GetInt( "damagebits" ) & DMG_CRITICAL )
@@ -582,6 +583,7 @@ void CHudBaseDeathNotice::FireGameEvent( IGameEvent *event )
 
 		if ( FStrEq( pszEventName, "player_death" ) )
 		{
+			// #
 			if ( m_DeathNotices[iMsg].bCrit )
 			{
 				Msg( "%s (crit)\n", sDeathMsg );

@@ -41,9 +41,9 @@
 int g_iTeleporterRechargeTimes[4] =
 {
 	0,
-	10,
-	5,
-	3
+	7,
+	4,
+	2
 };
 
 IMPLEMENT_SERVERCLASS_ST( CObjectTeleporter, DT_ObjectTeleporter )

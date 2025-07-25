@@ -29,6 +29,7 @@ const char *g_szQualityStrings[] =
 	"completed",
 	"haunted",
 	"collectors",
+	"snowy",
 	"paintkitWeapon",
 
 	"default",		// AE_RARITY_DEFAULT,
@@ -87,6 +88,7 @@ const char *g_szQualityColorStrings[] =
 	"QualityColorUnique",
 	"QualityColorCommunity",
 	"QualityColorDeveloper",
+	"QualityColorSnowy",
 	"QualityColorSelfMade",
 	"QualityColorSelfMadeCustomized",
 	"QualityColorStrange",
@@ -128,6 +130,7 @@ const char *g_szQualityLocalizationStrings[] =
 	"#unique",
 	"#community",
 	"#developer",
+	"#snowy",
 	"#selfmade",
 	"#customized",
 	"#strange",
@@ -170,6 +173,7 @@ int g_nRarityScores[] =
 	14,		// AE_UNIQUE,
 	-1,		// AE_COMMUNITY,
 	-3,		// AE_DEVELOPER,
+	-4,		// AE_SNOWY,
 	-2,		// AE_SELFMADE,
 	100,	// AE_CUSTOMIZED,		// Unused
 	9,		// AE_STRANGE,

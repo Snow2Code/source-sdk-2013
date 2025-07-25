@@ -12301,6 +12301,13 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 			DropHealthPack( info, true );
 		}
 
+		int iDropMedHealthOnKill = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayerAttacker, iDropMedHealthOnKill, drop_med_health_pack_on_kill );
+		if ( iDropMedHealthOnKill == 1 )
+		{
+			DropMedHealthPack( info, true );
+		}
+
 		int iKillForcesAttackerToLaugh = 0;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayerAttacker, iKillForcesAttackerToLaugh, kill_forces_attacker_to_laugh );
 		if ( iKillForcesAttackerToLaugh == 1 )
@@ -13123,7 +13130,7 @@ void CTFPlayer::DropAmmoPackFromProjectile( CBaseEntity *pProjectile )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: Drop small health pack on kill
 //-----------------------------------------------------------------------------
 void CTFPlayer::DropHealthPack( const CTakeDamageInfo &info, bool bEmpty )
 {
@@ -13137,6 +13144,24 @@ void CTFPlayer::DropHealthPack( const CTakeDamageInfo &info, bool bEmpty )
 
 		Vector vecVelocity = vecImpulse * 250.0;
 		pMedKit->DropSingleInstance( vecVelocity, this, 0 );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Drop medium health pack on kill
+//-----------------------------------------------------------------------------
+void CTFPlayer::DropMedHealthPack(const CTakeDamageInfo& info, bool bEmpty)
+{
+	Vector vecSrc = this->WorldSpaceCenter();
+	CHealthKitMedium* pMedKit = assert_cast<CHealthKitMedium*>(CBaseEntity::Create("item_healthkit_medium", vecSrc, vec3_angle, this));
+	if (pMedKit)
+	{
+		Vector vecImpulse = RandomVector(-1, 1);
+		vecImpulse.z = 1;
+		VectorNormalize(vecImpulse);
+
+		Vector vecVelocity = vecImpulse * 250.0;
+		pMedKit->DropSingleInstance(vecVelocity, this, 0);
 	}
 }
 

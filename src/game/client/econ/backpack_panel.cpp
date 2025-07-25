@@ -85,6 +85,8 @@ const char *g_szItemBorders[][5] =
 	{ "BackpackItemBorder_Haunted",		"BackpackItemMouseOverBorder_Haunted",		"BackpackItemSelectedBorder",	"BackpackItemGreyedOutBorder_Haunted",		"BackpackItemGreyedOutSelectedBorder_Haunted"		},		// AE_HAUNTED
 	{ "BackpackItemBorder_Collectors",	"BackpackItemMouseOverBorder_Collectors",	"BackpackItemSelectedBorder",	"BackpackItemGreyedOutBorder_Collectors",	"BackpackItemGreyedOutSelectedBorder_Collectors"	},		// AE_COLLECTORS
 
+	{ "BackpackItemBorder_Snowy",		"BackpackItemMouseOverBorder_Snowy",		"BackpackItemSelectedBorder",	"BackpackItemGreyedOutBorder_Snowy",		"BackpackItemGreyedOutSelectedBorder_Snowy"			},		// AE_SNOWY
+
 	{ "BackpackItemBorder_PaintkitWeapon",	"BackpackItemMouseOverBorder_PaintkitWeapon",	"BackpackItemSelectedBorder",	"BackpackItemGreyedOutBorder_PaintkitWeapon",	"BackpackItemGreyedOutSelectedBorder_PaintkitWeapon"	},	// AE_Paintkit
 	{ "BackpackItemBorder_RarityDefault",	"BackpackItemMouseOverBorder_RarityDefault",	"BackpackItemSelectedBorder",	"BackpackItemGreyedOutBorder_RarityDefault",	"BackpackItemGreyedOutSelectedBorder_RarityDefault"		}, // AE_RARITY_DEFAULT,
 	{ "BackpackItemBorder_RarityCommon",	"BackpackItemMouseOverBorder_RarityCommon",		"BackpackItemSelectedBorder",	"BackpackItemGreyedOutBorder_RarityCommon",		"BackpackItemGreyedOutSelectedBorder_RarityCommon"		}, // AE_RARITY_COMMON,
